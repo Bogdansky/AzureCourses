@@ -1,0 +1,54 @@
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+namespace OrderItemsReserver
+{
+    public class OrderItemsReserverFunction
+    {
+        private static readonly IConfiguration _config;
+
+        static OrderItemsReserverFunction()
+        {
+            _config = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
+        }
+
+        [FixedDelayRetry(3, "00:00:10")]
+        [FunctionName("OrderItemsReserverFunction")]
+        public static void Run([ServiceBusTrigger("ordersreserved", Connection = "ServiceBusConnectionString")] string queueItem, ILogger log)
+        {
+            try
+            {
+                SendItemToBlob(queueItem).GetAwaiter().GetResult();
+
+                log.LogInformation($"C# ServiceBus queue trigger function processed message: {queueItem}");
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Function stopped its work with message: " + e.Message);
+                throw;
+            }
+            finally
+            {
+                log.LogInformation("Function's work finished");
+            }
+        }
+
+        private static async Task SendItemToBlob(string queueItem)
+        {
+            var container = new BlobStorage(_config);
+            var name = $"order_{DateTime.Now:dd.MM.yyyy-hh:mm:ss}.json";
+
+            using var stream = new MemoryStream(Encoding.Default.GetBytes(queueItem));
+            await container.SaveAsync(stream, name);
+        }
+    }
+}
