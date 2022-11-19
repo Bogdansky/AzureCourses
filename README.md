@@ -1,4 +1,4 @@
-<p style='border:1px solid black'><img src="schema.png"/></p>
+<p style="border:1px solid black"><img src="schema.png"/></p>
 <ul>
     <li>Web apps should able balanced with Traffic Manager</li>
     <li>Web should be available for auto-scaling</li>
