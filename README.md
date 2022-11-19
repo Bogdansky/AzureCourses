@@ -1,4 +1,13 @@
 <p style='border:1px solid black'><img src="schema.png"/></p>
+<ul>
+    <li>Web apps should able balanced with Traffic Manager</li>
+    <li>Web should be available for auto-scaling</li>
+    <li>Web should support deployment slots (at least one instance of Web)</li>
+    <li>Web and Public API should use Azure SQL as a database</li>
+    <li>PublicAPI should be deployed as the Container</li>
+    <li>Order Items Reserver function should be able to create Reservation JSON files in Azure Blob Storage by communicating through Service Bus and handle errors by sending the email through Logic Apps.</li>
+    <li>Delivery Order Processor functions should be triggered after the order has been created and send the order detail information to CosmosDB</li>
+</ul>
 
 # Microsoft eShopOnWeb ASP.NET Core Reference Application
 
