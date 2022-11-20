@@ -23,9 +23,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureAppConfiguration((context, config) =>
 {
     var builtConfig = config.Build();
-    var vaultUri = new Uri(builtConfig["VaultUri"]);
 
-    config.AddAzureKeyVault(vaultUri, new DefaultAzureCredential());
+    config.AddAzureKeyVault(
+        new Uri(builtConfig["VaultUri"]), 
+        new DefaultAzureCredential()
+    );
 });
 
 builder.Logging.AddConsole();

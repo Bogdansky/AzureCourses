@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using OrderItemsReserver.Models;
 
 namespace OrderItemsReserver
 {

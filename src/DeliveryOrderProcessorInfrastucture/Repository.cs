@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 using DeliveryOrderProcessorInfrastucture.Models;
 using Microsoft.Azure.Cosmos;
 
@@ -13,18 +9,33 @@ public class OrderRepository
     public const string ContainerId = "orders";
     public const string PartitionKey = "/id";
 
-    private Database _database;
+    private readonly Database _database;
     private Container _container;
+    private Container Container
+    {
+        get
+        {
+            if (_container == null)
+            {
+                throw new InvalidOperationException();
+            }
+            return _container;
+        }
+        init => _container = value;
+    }
 
     public OrderRepository(Database database)
     {
         _database = database;
+
+        Container = _database.CreateContainerIfNotExistsAsync(
+                id: ContainerId,
+                partitionKeyPath: PartitionKey)
+            .GetAwaiter().GetResult();
     }
 
     public async Task<string> AddOrderAsync(Order order)
     {
-        var container = await GetContainerAsync();
-
         var newItem = new OrderCosmos
         {
             id = Guid.NewGuid().ToString(),
@@ -34,33 +45,14 @@ public class OrderRepository
             TotalPrice = order.OrderItems.Sum(x => x.Units * x.UnitPrice)
         };
 
-        var res = await container.CreateItemAsync(newItem, new PartitionKey(newItem.id));
+        var res = await Container.CreateItemAsync(newItem, new PartitionKey(newItem.id));
 
-        if (res.StatusCode == System.Net.HttpStatusCode.Created)
+        // if record created, will return new identifier
+        if (res.StatusCode == HttpStatusCode.Created)
         {
             return newItem.id;
         }
 
         throw new Exception($"Order [{newItem.OrderId}] with item id {newItem.id} adding was failed");
-    }
-
-    public async Task DeleteOrder(string itemId) 
-    {
-        var container = await GetContainerAsync();
-        throw new NotImplementedException();
-    }
-
-    private async Task<Container> GetContainerAsync()
-    {
-        if (_container != null)
-        {
-            return _container;
-        }
-
-        _container = await _database.CreateContainerIfNotExistsAsync(
-            id: ContainerId, 
-            partitionKeyPath: PartitionKey
-        );
-        return _container;
     }
 }

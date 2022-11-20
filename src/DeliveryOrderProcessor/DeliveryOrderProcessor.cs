@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Text;
 using DeliveryOrderProcessorInfrastucture;
 using DeliveryOrderProcessorInfrastucture.Models;
+using System.Net;
 
 namespace DeliveryOrderProcessor;
 
@@ -20,13 +21,21 @@ public static class DeliveryOrderProcessor
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
         ILogger log)
     {
-        var order = await GetOrderRequest(req.Body);
+        try
+        {
+            var order = await GetOrderRequest(req.Body);
 
-        var repository = await RepositoryBuilder.CreateOrderRepository();
-        await repository.AddOrderAsync(order);
+            var repository = await RepositoryBuilder.CreateOrderRepository(log);
+            var result = await repository.AddOrderAsync(order);
 
-        log.LogInformation($"Order {order.Id} was added at CosmosDB");
-        return new OkObjectResult("Hello world");
+            log.LogInformation($"Order {order.Id} with record id {result} was added at CosmosDB");
+            return new OkObjectResult(HttpStatusCode.Created);
+        }
+        catch (Exception ex) 
+        {
+            log.LogError(ex.Message);
+            return new BadRequestObjectResult(ex.Message);
+        }
     }
 
     private static async Task<Order> GetOrderRequest(Stream body)

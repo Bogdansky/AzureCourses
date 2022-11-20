@@ -19,27 +19,25 @@ public class OrderService : IOrderService
     private readonly IUriComposer _uriComposer;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
-    private string _functionURL;
-    private string _functionKey;
+    private readonly IAzureService _azureService;
 
     public OrderService(IRepository<Basket> basketRepository,
         IRepository<CatalogItem> itemRepository,
         IRepository<Order> orderRepository,
         IUriComposer uriComposer,
-        IConfiguration configuration)
+        IAzureService azureService)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
 
-        InitFunctionVariables(configuration);
+        _azureService = azureService;
     }
 
     public async Task CreateOrderAsync(int basketId, Address shippingAddress)
     {
-        var basketSpec = new BasketWithItemsSpecification(basketId);
-        var basket = await _basketRepository.GetBySpecAsync(basketSpec);
+        var basket = await _basketRepository.GetByIdAsync(basketId);
 
         Guard.Against.NullBasket(basketId, basket);
         Guard.Against.EmptyBasketOnCheckout(basket.Items);
@@ -58,53 +56,9 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
-        // deploy OrderItemsReserver before uncommenting this code
-        // await SendToWarehouse(order);   
-
-        // await SendToDeliveryOrderProcessor(order);
-    }
-
-    private void InitFunctionVariables(IConfiguration configuration)
-    {
-        var section = configuration.GetSection("Functions:delivery-order-processor-kba");
-
-        _functionURL = section["FunctionURL"];
-        _functionKey = section["FunctionKey"];
-
-        //Guard.Against.Null(_functionURL);
-        //Guard.Against.Null(_functionKey);
-    }
-
-    private async Task SendToWarehouse(Order order)
-    {
-        var groupedOrder = order.OrderItems
-            .Select(i => new
-            {
-                Quantity = i.Units,
-                ItemId = i.ItemOrdered.CatalogItemId
-            });
-        var stringOrder = JsonExtensions.ToJson(groupedOrder);
-
-        await SendRequest(stringOrder);
-    }
-
-    private async Task SendToDeliveryOrderProcessor(Order order)
-    {
-        var deliveryOrder = JsonExtensions.ToJson(order);
-        await SendRequest(deliveryOrder);
-    }
-
-    private async Task SendRequest(string order)
-    {
-        var client = new HttpClient();
         
-        var content = new StringContent(order);
-        var request = new HttpRequestMessage(HttpMethod.Post, _functionURL)
-        {
-            Content = content
-        };
+        await _azureService.SendToWarehouse(order);
 
-        request.Headers.Add("x-functions-key", _functionKey);
-        await client.SendAsync(request);
+        await _azureService.DeliverOrder(order);
     }
 }
