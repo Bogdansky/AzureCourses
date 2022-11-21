@@ -14,7 +14,7 @@ public static class RepositoryBuilder
 {
     public static async Task<OrderRepository> CreateOrderRepository(ILogger logger)
     {
-        var endpoint = Environment.GetEnvironmentVariable("CosmosDB:CosmosEndpoint");
+        var endpoint = Environment.GetEnvironmentVariable("CosmosDB:Endpoint");
         var primaryKey = Environment.GetEnvironmentVariable("CosmosDB:PrimaryKey");
         var databaseId = Environment.GetEnvironmentVariable("CosmosDB:OrderDatabaseId");
 

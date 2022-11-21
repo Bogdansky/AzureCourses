@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Ardalis.GuardClauses;
 using DeliveryOrderProcessorInfrastucture.Models;
 using Microsoft.Azure.Cosmos;
 
@@ -10,25 +11,15 @@ public class OrderRepository
     public const string PartitionKey = "/id";
 
     private readonly Database _database;
-    private Container _container;
-    private Container Container
-    {
-        get
-        {
-            if (_container == null)
-            {
-                throw new InvalidOperationException();
-            }
-            return _container;
-        }
-        init => _container = value;
-    }
+    private readonly Container _container;
 
     public OrderRepository(Database database)
     {
+        Guard.Against.Null(database);
+
         _database = database;
 
-        Container = _database.CreateContainerIfNotExistsAsync(
+        _container = _database.CreateContainerIfNotExistsAsync(
                 id: ContainerId,
                 partitionKeyPath: PartitionKey)
             .GetAwaiter().GetResult();
@@ -45,7 +36,7 @@ public class OrderRepository
             TotalPrice = order.OrderItems.Sum(x => x.Units * x.UnitPrice)
         };
 
-        var res = await Container.CreateItemAsync(newItem, new PartitionKey(newItem.id));
+        var res = await _container.CreateItemAsync(newItem, new PartitionKey(newItem.id));
 
         // if record created, will return new identifier
         if (res.StatusCode == HttpStatusCode.Created)
