@@ -34,6 +34,7 @@ public static class ConfigureCoreServices
         services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
+        services.AddScoped<IAzureService, AzureService>();
         services.AddScoped<IBasketService, BasketService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IBasketQueryService, BasketQueryService>();

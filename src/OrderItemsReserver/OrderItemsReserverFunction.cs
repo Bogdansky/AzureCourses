@@ -30,7 +30,7 @@ namespace OrderItemsReserver
             {
                 SendItemToBlob(queueItem).GetAwaiter().GetResult();
 
-                log.LogInformation($"C# ServiceBus queue trigger function processed message: {queueItem}");
+                log.LogInformation($"ServiceBus queue trigger function sent following message to blob: {queueItem}");
             }
             catch (Exception e)
             {
