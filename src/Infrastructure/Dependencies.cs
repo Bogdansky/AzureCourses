@@ -30,11 +30,11 @@ public static class Dependencies
             // Requires LocalDB which can be installed with SQL Server Express 2016
             // https://www.microsoft.com/en-us/download/details.aspx?id=54284
             services.AddDbContext<CatalogContext>(c =>
-                c.UseSqlServer(CatalogContext.ConnectionStringKey));
+                c.UseSqlServer(configuration[CatalogContext.ConnectionStringKey]));
 
             // Add Identity DbContext
             services.AddDbContext<AppIdentityDbContext>(options =>
-                options.UseSqlServer(AppIdentityDbContext.ConnectionStringKey));
+                options.UseSqlServer(configuration[AppIdentityDbContext.ConnectionStringKey]));
         }
     }
 }
