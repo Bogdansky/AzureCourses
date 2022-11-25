@@ -8,6 +8,8 @@ namespace Microsoft.eShopWeb.Infrastructure.Data;
 
 public class CatalogContext : DbContext
 {
+    public const string ConnectionStringKey = "CatalogConnectionString";
+
     public CatalogContext(DbContextOptions<CatalogContext> options) : base(options)
     {
     }
