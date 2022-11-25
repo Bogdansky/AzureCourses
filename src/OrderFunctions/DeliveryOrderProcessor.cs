@@ -12,7 +12,7 @@ using DeliveryOrderProcessorInfrastucture;
 using DeliveryOrderProcessorInfrastucture.Models;
 using System.Net;
 
-namespace OrderFunctions;
+namespace DeliveryOrderProcessor;
 
 public static class DeliveryOrderProcessor
 {
