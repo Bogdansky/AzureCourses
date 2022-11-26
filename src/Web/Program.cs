@@ -20,6 +20,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Host.ConfigureAppConfiguration((context, config) =>
 {
     var builtConfig = config.Build();
