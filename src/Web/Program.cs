@@ -22,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
 
+builder.Services.AddApplicationInsightsTelemetry();
+
 builder.Host.ConfigureAppConfiguration((context, config) =>
 {
     var builtConfig = config.Build();
